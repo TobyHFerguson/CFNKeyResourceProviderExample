@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+           "name": "Attach 5890",
+           "type": "python",
+           "request": "attach",
+           "port": 5890,
+           "host": "localhost",
+           "pathMappings": [
+               {
+                   "localRoot": "${workspaceFolder}/build",
+                   "remoteRoot": "/var/task"
+               }
+           ]
+       }
+   ]
+ }
