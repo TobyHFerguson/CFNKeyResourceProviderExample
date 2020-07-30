@@ -1,0 +1,118 @@
+* toby::ECS::KeyPair
+This repository contains the code and tools to develop, test and build a KeyPair Resource Provider for CloudFormation. It was inspired by [[https://www.cloudar.be/awsblog/writing-an-aws-cloudformation-resource-provider-in-python-step-by-step/][the article]] by Ben Bridts. Thanks Ben!
+
+The [[https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-develop.html][AWS User Guide for Type Deployment]] is also a very valuable resource. Keep it by your bed :-)
+
+* To configure your system
+In a virtualenv install the python bits:
+#+BEGIN_SRC sh
+pyenv local 3.8.5
+pyenv virtualenv cloudformation
+pip install -r requirements.txt
+#+END_SRC
+
+* To modify the template file ~toby-ec2-keypair.json~
++ Edit is as normal
++ validate using ~cfn validate~ until it passes
+
+Create test events using the ~bin/create_test_events.sh~. This requires two arguments:
+1. The action - one of CREATE, DELETE, UPDATE, READ, LIST
+2. The input datatypes, as a json file. See ~test_templates/key_name.json~ for an example
+
+Put the output into files in the ~sam-tests/~ directory.
+* To test locally
+Use ~cfn submit --dry-run~ to create the necessary ~build/~ directory and move the handler code in there
+
+Test thus:
+#+BEGIN_SRC sh
+sam local invoke TestEntrypoint -e sam-tests/create.json
+#+END_SRC
+
+This uses a docker image and mounts the ~build/~ directory contents into ~/var/tasks~ and then executing the code there.
+
+You'll likely find bugs, so you'll need to debug:
+
+* Debugging
+Debugging is detailed in the [[https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-debugging-python.html][AWS Docs]], but its not quite right :-(
+
+You need to install ~ptvsd~ into the ~build~ directory, after each code generation:
+#+BEGIN_SRC sh
+cfn submit --dry-run
+pip install ptvsd -t build
+#+END_SRC
+
+You also need to add the following to your code:
+#+BEGIN_SRC python
+  import ptvsd
+
+  # Enable ptvsd on 0.0.0.0 address and on port 5890 that we'll connect later with our IDE
+  ptvsd.enable_attach(address=('0.0.0.0', 5890), redirect_output=True)
+  ptvsd.wait_for_attach()
+  breakpoint()                    # Missing from AWS docs
+#+END_SRC
+
+Then, when you run your tests, add a flag, thus:
+#+BEGIN_SRC sh
+sam local invoke TestEntrypoint -d 5890 -e sam-tests/create.json
+#+END_SRC
+
+Configure your debugger with the following ~launch.json~ file:
+#+BEGIN_SRC javascript
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+           "name": "Attach 5890",
+           "type": "python",
+           "request": "attach",
+           "port": 5890,
+           "host": "localhost",
+           "pathMappings": [
+               {
+                   "localRoot": "${workspaceFolder}/build",
+                   "remoteRoot": "/var/task"
+               }
+           ]
+       }
+   ]
+ }
+#+END_SRC
+The ~localRoot~ is the directory where code will be resolved, and ~remoteRoot~ is where its mounted. You can see this in the output of the ~sam invoke~, thus:
+#+BEGIN_EXAMPLE
+Mounting /Users/tobyferguson/Development/CFNKeyResourceProviderExample/build as /var/task:ro,delegated inside runtime container
+#+END_EXAMPLE
+
+* Contract tests
+You must ensure you can pass the contract tests. Execute those by running the following two commands in separate terminals:
+#+BEGIN_SRC sh
+sam local start-api
+#+END_SRC
+
+#+BEGIN_SRC sh
+cfn test
+#+END_SRC
+
+Something I observed is that the tests aren't necessarily stable - mostly a test will pass, but sometimes it will fail. I *think* this is a timing issue - it could be that the ec2 keypair hasn't been properly formed by the time 'success' is returned from the underlying ec2 service. I didn't investigate further. 
+
+In particular, I see the following as output of ~cfn test~:
+#+BEGIN_EXAMPLE
+handler_create.py::contract_invalid_create FAILED   
+#+END_EXAMPLE
+
+On investigation I see this:
+#+BEGIN_EXAMPLE
+status = <OperationStatus.SUCCESS: 'SUCCESS'>
+response = {'callbackDelaySeconds': 0, 'message': '', 'resourceModel': {'Fingerprint': '51:9a:ab:e6:9d:1c:f4:b9:c7:59:35:f5:0c:4c:06:8e', 'KeyName': '0'}, 'status': 'SUCCESS'}
+
+    @staticmethod
+    def assert_failed(status, response):
+>       assert status == OperationStatus.FAILED, "status should be FAILED"
+E       AssertionError: status should be FAILED
+
+../../.pyenv/versions/3.8.0/envs/cloudformation/lib/python3.8/site-packages/rpdk/core/contract/resource_client.py:266: AssertionError
+#+END_EXAMPLE
+Which interpret as saying that a key with name '0' was supposed to have failed, but it succeeded. However, in looking at the pattern restriction on keynames in ~toby-ec2-keypair.json~ I see that the pattern is supposed to match ~^[a-zA-Z0-9_-]+$~ (i.e alphanumeric string of at least one character) which it does. So I don't get it. 
+
+One has to delete the keys left behind by hand, unfortunately. 
+
+But if you run the tests a couple of times they pass ... so there!
