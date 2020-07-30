@@ -116,3 +116,7 @@ Which interpret as saying that a key with name '0' was supposed to have failed, 
 One has to delete the keys left behind by hand, unfortunately. 
 
 But if you run the tests a couple of times they pass ... so there!
+* Submitting
+When its all gone through, submit to CloudFormation: ~cfn submit~
+
+At the end, if that goes OK, you'll have a new Private Template in CloudFormation - cool!
