@@ -1,7 +1,7 @@
 {
     "typeName": "toby::EC2::KeyPair",
     "description": "Provides an EC2 key pair resource. A key pair is used to control login access to EC2 instances. This resource requires an existing user-supplied key pair.",
-    "sourceUrl": "https://cloudar.be",
+    "sourceUrl": "https://github.com/TobyHFerguson/CFNKeyResourceProviderExample/tree/master/docs",
     "properties": {
         "KeyName": {
             "description": "The name for the key pair.",
