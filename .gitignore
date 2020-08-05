@@ -126,3 +126,6 @@ dmypy.json
 # contains credentials
 sam-tests/
 /toby-ec2-keypair.zip
+src/toby_ec2_keypair/models.py
+docs/README.md
+docs/README.md

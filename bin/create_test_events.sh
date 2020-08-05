@@ -6,17 +6,17 @@
 
 ## Check args
 [ $# -eq 2 ] || {
-    echo 'Expected 2 arguments, got $#: $*; exiting';
+    echo 'Expected 2 arguments, got $#: $*; exiting' 1>&2;
     exit 1
 }
 
 [[ $1 =~ CREATE|UPDATE|DELETE|READ|LIST ]] || {
-    echo "$0 - ERROR: $1 should match one of CREATE UPDATE DELETE READ LIST, but doesnt"
+    echo "$0 - ERROR: $1 should match one of CREATE UPDATE DELETE READ LIST, but doesnt" 1>&2
     exit 1
 }
 
 [[ -r $2 ]] || {
-    echo "$0 - ERROR Cannot read $2"
+    echo "$0 - ERROR Cannot read $2" 1>&2
     exit 1
 }
 
