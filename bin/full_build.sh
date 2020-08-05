@@ -1,0 +1,1 @@
+cfn validate && cfn generate && cfn submit --dry-run && pip install ptvsd -t build && sam local invoke TestEntrypoint -e sam-tests/create.json -d 5890

@@ -2,6 +2,17 @@
     "typeName": "toby::EC2::KeyPair",
     "description": "Provides an EC2 key pair resource. A key pair is used to control login access to EC2 instances. This resource requires an existing user-supplied key pair.",
     "sourceUrl": "https://github.com/TobyHFerguson/CFNKeyResourceProviderExample/tree/master/docs",
+    "definitions": {
+        "Key" : {
+            "type": "object",
+            "properties":  {
+                "keymaterial" : {
+                    "type": "string"
+                }
+            },
+            "required": ["keymaterial"]
+        }
+    },
     "properties": {
         "KeyName": {
             "description": "The name for the key pair.",
@@ -10,9 +21,13 @@
             "minLength": 1,
             "maxLength": 255
         },
-        "PublicKey": {
+        "PublicKeys": {
             "description": "The public key material.",
-            "type": "string"
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/Key"
+            }
         },
         "Fingerprint": {
             "description": "The MD5 public key fingerprint as specified in section 4 of RFC 4716.",
@@ -21,7 +36,7 @@
     },
     "required": [
         "KeyName",
-        "PublicKey"
+        "PublicKeys"
     ],
     "additionalIdentifiers": [
         [

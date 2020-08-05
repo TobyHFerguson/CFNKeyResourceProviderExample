@@ -40,7 +40,7 @@ class ResourceHandlerRequest(BaseResourceHandlerRequest):
 @dataclass
 class ResourceModel(BaseModel):
     KeyName: Optional[str]
-    PublicKey: Optional[str]
+    PublicKeys: Optional[Sequence["_Key"]]
     Fingerprint: Optional[str]
 
     @classmethod
@@ -54,12 +54,32 @@ class ResourceModel(BaseModel):
         recast_object(cls, json_data, dataclasses)
         return cls(
             KeyName=json_data.get("KeyName"),
-            PublicKey=json_data.get("PublicKey"),
+            PublicKeys=deserialize_list(json_data.get("Key"), Key),
             Fingerprint=json_data.get("Fingerprint"),
         )
 
 
 # work around possible type aliasing issues when variable has same name as a model
 _ResourceModel = ResourceModel
+
+
+@dataclass
+class Key(BaseModel):
+    keymaterial: Optional[str]
+
+    @classmethod
+    def _deserialize(
+        cls: Type["_Key"],
+        json_data: Optional[Mapping[str, Any]],
+    ) -> Optional["_Key"]:
+        if not json_data:
+            return None
+        return cls(
+            keymaterial=json_data.get("keymaterial"),
+        )
+
+
+# work around possible type aliasing issues when variable has same name as a model
+_Key = Key
 
 

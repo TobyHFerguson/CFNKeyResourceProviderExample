@@ -13,7 +13,7 @@ To declare this entity in your AWS CloudFormation template, use the following sy
     "Type" : "toby::EC2::KeyPair",
     "Properties" : {
         "<a href="#keyname" title="KeyName">KeyName</a>" : <i>String</i>,
-        "<a href="#publickey" title="PublicKey">PublicKey</a>" : <i>String</i>,
+        "<a href="#publickeys" title="PublicKeys">PublicKeys</a>" : <i>[ <a href="key.md">Key</a>, ... ]</i>,
     }
 }
 </pre>
@@ -24,7 +24,8 @@ To declare this entity in your AWS CloudFormation template, use the following sy
 Type: toby::EC2::KeyPair
 Properties:
     <a href="#keyname" title="KeyName">KeyName</a>: <i>String</i>
-    <a href="#publickey" title="PublicKey">PublicKey</a>: <i>String</i>
+    <a href="#publickeys" title="PublicKeys">PublicKeys</a>: <i>
+      - <a href="key.md">Key</a></i>
 </pre>
 
 ## Properties
@@ -45,15 +46,15 @@ _Pattern_: <code>^[a-zA-Z0-9_-]+$</code>
 
 _Update requires_: [Replacement](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-replacement)
 
-#### PublicKey
+#### PublicKeys
 
 The public key material.
 
 _Required_: Yes
 
-_Type_: String
+_Type_: List of <a href="key.md">Key</a>
 
-_Update requires_: [Replacement](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-replacement)
+_Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
 
 ## Return Values
 
