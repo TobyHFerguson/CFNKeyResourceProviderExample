@@ -1,9 +1,9 @@
-import ptvsd
+# import ptvsd
 
-# Enable ptvsd on 0.0.0.0 address and on port 5890 that we'll connect later with our IDE
-ptvsd.enable_attach(address=('0.0.0.0', 5890), redirect_output=True)
-ptvsd.wait_for_attach()
-breakpoint()
+# # Enable ptvsd on 0.0.0.0 address and on port 5890 that we'll connect later with our IDE
+# ptvsd.enable_attach(address=('0.0.0.0', 5890), redirect_output=True)
+# ptvsd.wait_for_attach()
+# breakpoint()
 
 import logging
 from typing import Any, MutableMapping, Optional, Mapping
@@ -41,12 +41,14 @@ def create_handler(
         status=OperationStatus.IN_PROGRESS,
         resourceModel=model,
     )
+    LOG.info(model)
+    assert model.PublicKeys, 'The PublicKey in the model is None, but should be a value'
     # TODO: put code here
     if model.Fingerprint:
         progress.status = OperationStatus.FAILED
         progress.errorCode = HandlerErrorCode.InvalidRequest
         progress.message = "Fingerprint is read-only - should not be specified in a request"
-        progress.resourceModel.PublicKey = None
+        progress.resourceModel.PublicKeys = None
         return progress
 
     # Example:
@@ -93,7 +95,7 @@ def delete_handler(
     progress: ProgressEvent = ProgressEvent(
         status=OperationStatus.IN_PROGRESS,
     )
-    
+
     model.PublicKey = None  # Must not return a write only property
     key_name = request.desiredResourceState.KeyName
     ec2 = session.client('ec2')
